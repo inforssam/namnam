@@ -3,363 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>중첩 제어 구조 인터랙티브 퀴즈</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>중첩 제어 구조 퀴즈</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --primary: #003366;
-            --accent: #00CCFF;
-            --bg-dark: #0f172a;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --bg: #f8fafc;
             --white: #ffffff;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body {
-            background-color: var(--bg-dark);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
             margin: 0;
             padding: 0;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .header h1 { margin: 0; font-size: 1.25rem; }
+        .progress-container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255,255,255,0.2);
+            height: 8px;
+            border-radius: 4px;
+            margin: 1rem auto 0;
             overflow: hidden;
-            font-family: 'Noto Sans KR', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            display: none; /* Hidden on intro */
         }
-
-        /* Slide Framework (1280x720) */
-        .slide-deck {
-            width: 1280px;
-            height: 720px;
-            background-color: var(--white);
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
-        }
-
-        .slide-container {
-            min-width: 1280px;
-            height: 720px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            padding: 60px 80px;
-        }
-
-        /* Typography & Header */
-        .slide-title {
-            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
-            font-size: 42px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 30px;
-            border-left: 10px solid var(--accent);
-            padding-left: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .q-badge {
-            font-size: 18px;
+        #progress-bar {
+            width: 0%;
+            height: 100%;
             background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem 5rem;
+        }
+
+        .quiz-card {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            display: none;
+        }
+
+        .quiz-card.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Intro Screen Styles */
+        #intro-screen { text-align: center; }
+        .intro-icon { font-size: 4rem; color: var(--accent); margin-bottom: 1.5rem; }
+        .intro-title { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; }
+        .intro-desc { font-size: 1.1rem; color: #64748b; margin-bottom: 2rem; }
+        .start-btn { 
+            padding: 1rem 3rem; 
+            font-size: 1.25rem; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 9999px; 
+            cursor: pointer; 
+            font-weight: 700;
+            transition: transform 0.2s;
+        }
+        .start-btn:hover { transform: scale(1.05); background: var(--accent); }
+
+        .q-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #dbeafe;
             color: var(--primary);
-            padding: 5px 15px;
-            border-radius: 20px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
         }
 
-        .q-text { font-size: 24px; font-weight: 500; line-height: 1.6; color: var(--text-main); margin-bottom: 30px; }
+        .q-text { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
 
-        /* Interactive Components */
-        .option-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        .option-item {
-            background: #f1f5f9;
+        .options { display: grid; gap: 0.75rem; }
+        .option {
+            padding: 1rem;
             border: 2px solid #e2e8f0;
-            padding: 15px 25px;
-            border-radius: 12px;
+            border-radius: 0.75rem;
             cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            font-size: 20px;
+            transition: all 0.2s;
         }
-        .option-item:hover { border-color: var(--accent); background: #f0f9ff; }
-        .option-item.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .option:hover { border-color: var(--accent); background: #eff6ff; }
+        .option.selected { border-color: var(--primary); background: var(--primary); color: white; }
 
         .short-input {
             width: 100%;
-            padding: 20px;
+            padding: 1rem;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 24px;
-            margin-top: 20px;
+            border-radius: 0.75rem;
+            font-size: 1.1rem;
             outline: none;
-            transition: 0.3s;
         }
-        .short-input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 204, 255, 0.2); }
 
-        .drag-area { display: flex; gap: 15px; margin-top: 30px; min-height: 80px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1; flex-wrap: wrap; }
-        .drop-zone { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 250px; margin-top: 20px; padding: 20px; background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; }
-        .draggable { padding: 12px 20px; background: var(--accent); color: var(--primary); font-weight: 700; border-radius: 8px; cursor: grab; text-align: center; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .draggable.dragging { opacity: 0.4; }
+        .drag-pool { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem; background: #f1f5f9; border-radius: 0.5rem; margin-bottom: 1rem; min-height: 50px; }
+        .drop-zone { min-height: 150px; border: 2px dashed #cbd5e1; border-radius: 0.5rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; background: #fff; }
+        .item { padding: 0.5rem 1rem; background: var(--accent); color: white; border-radius: 0.25rem; cursor: move; user-select: none; font-weight: bold; }
 
-        /* Navigation & Footer */
-        .nav-controls {
+        .controls {
             position: fixed;
-            bottom: 80px;
-            right: 80px;
-            display: flex;
-            gap: 20px;
-            z-index: 100;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none; /* Hidden on intro */
+            gap: 1rem;
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .nav-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
             background: var(--primary);
             color: white;
-            border: none;
+            font-weight: 700;
             cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            transition: 0.3s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-        .nav-btn:hover { transform: scale(1.1); background: var(--accent); }
-        .nav-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .progress-bar { position: fixed; top: 0; left: 0; height: 8px; background: var(--accent); transition: width 0.3s; z-index: 200; }
-
-        .slide-footer {
-            position: absolute;
-            bottom: 30px;
-            left: 80px;
-            right: 80px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            color: var(--text-muted);
-            border-top: 1px solid #e2e8f0;
-            padding-top: 15px;
-        }
-
-        .copyright { font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
-
-        /* Layout: Intro & Finish */
-        .hero-content { text-align: center; justify-content: center; height: 100%; display: flex; flex-direction: column; align-items: center; }
-        .hero-content h1 { font-size: 70px; color: var(--primary); margin: 0; }
-        .hero-content p { font-size: 24px; color: var(--text-muted); margin-top: 20px; }
-        .hero-image { width: 400px; height: 250px; background: #f1f5f9; border-radius: 20px; margin-bottom: 40px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .hero-image img { width: 100%; height: 100%; object-fit: cover; }
-
+        .footer { text-align: center; color: #64748b; font-size: 0.875rem; margin-top: 2rem; }
     </style>
 </head>
 <body>
 
-<div class="progress-bar" id="progress"></div>
-
-<div class="slide-deck" id="deck">
-    <!-- Slides will be injected by JavaScript -->
+<div class="header">
+    <h1>중첩 제어 구조 마스터</h1>
+    <div class="progress-container" id="progress-wrapper">
+        <div id="progress-bar"></div>
+    </div>
 </div>
 
-<div class="nav-controls">
-    <button class="nav-btn" id="prevBtn" onclick="moveSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="nav-btn" id="nextBtn" onclick="moveSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
+<div class="container" id="quiz-container">
+    <!-- Intro Screen -->
+    <div class="quiz-card active" id="intro-screen">
+        <div class="intro-icon"><i class="fas fa-laptop-code"></i></div>
+        <div class="intro-title">퀴즈 챌린지 시작</div>
+        <p class="intro-desc">
+            중첩 제어 구조와 건강 정보 안내 프로그램 제작에 관한<br>
+            총 10개의 핵심 문항을 풀어보세요.
+        </p>
+        <button class="start-btn" onclick="startQuiz()">시작하기</button>
+        <div class="footer">copyright 함현중학교 남수현</div>
+    </div>
+</div>
+
+<div class="controls" id="nav-controls">
+    <button class="btn" id="prev-btn" onclick="changeQuestion(-1)"><i class="fas fa-arrow-left"></i> 이전</button>
+    <span id="q-counter" style="display: flex; align-items: center; font-weight: bold; min-width: 80px; justify-content: center;">1 / 10</span>
+    <button class="btn" id="next-btn" onclick="changeQuestion(1)">다음 <i class="fas fa-arrow-right"></i></button>
 </div>
 
 <script>
-// 1. DATA POOL (Based on coding_logic_quiz_20)
-const quizSource = {
-    multiple: [
-        { q: "제어 구조 안에 또 다른 제어 구조가 포함된 구조를 무엇이라고 합니까?", options: ["순차 제어 구조", "중첩 제어 구조", "단순 선택 구조", "무한 반복 구조", "함수 호출 구조"], correct: 1 },
-        { q: "중첩 제어 구조를 사용하는 가장 주된 이유는 무엇입니까?", options: ["프로그램의 실행 속도를 높이기 위해", "코딩 줄 수를 최대한 늘리기 위해", "복잡한 조건이나 다양한 상황을 유연하게 제어하기 위해", "변수의 개수를 줄이기 위해", "그래픽 화면을 더 화려하게 만들기 위해"], correct: 2 },
-        { q: "다음 중 '반복 구조 내의 선택 구조'가 활용된 사례로 가장 적절한 것은?", options: ["아침에 일어나서 학교에 가는 과정", "1부터 100까지 숫자 중 짝수만 골라 더하기", "로그인 창에서 아이디와 암호를 입력받기", "구구단 전체 단을 한 번에 출력하기", "신호등이 바뀌기를 기다리기"], correct: 1 },
-        { q: "BMI 지수가 23 이상 25 미만일 때 출력되는 건강 상태로 옳은 것은?", options: ["저체중", "정상", "과체중", "비만", "고도비만"], correct: 2 },
-        { q: "건강 정보 안내 알고리즘에서 비만(25 이상) 여부를 판단하기 위해 가장 적절한 블록 구성은?", options: ["만일 BMI < 25 이라면", "만일 BMI > 25 이라면", "만일 BMI >= 25 이라면", "만일 BMI = 25 이라면", "만일 BMI <= 25 이라면"], correct: 2 }
-    ],
-    short: [
-        { q: "BMI 계산 공식은 '몸무게 / (키 * 키)'입니다. 여기서 키의 단위는 무엇인가요?", a: "미터" },
-        { q: "문제의 핵심 요소를 추출하고 단순화하는 과정을 무엇이라 하나요?", a: "추상화" },
-        { q: "엔트리 코딩에서 사용자의 답변을 임시로 저장하여 활용하는 블록의 명칭은?", a: "대답" },
-        { q: "프로그램을 만들기 전, 문제 해결 과정을 논리적으로 설계하는 단계를 무엇이라 합니까?", a: "알고리즘 설계" },
-        { q: "BMI 계산 시 키를 1.75와 같이 소수점으로 표현하는 기준 단위는?", a: "미터" }
-    ],
-    drag: [
-        { q: "건강 정보 안내 알고리즘의 실행 순서를 올바르게 배치하세요.", items: ["몸무게/키 입력받기", "BMI 계산하기", "비만 여부 판단하기", "결과 출력하기"] },
-        { q: "알고리즘 구성의 핵심 3단계를 순서대로 배치하세요.", items: ["입력(Input)", "처리(Process)", "출력(Output)"] },
-        { q: "문제 해결의 논리적 단계를 순서대로 배치하세요.", items: ["문제 이해", "핵심 요소 추상화", "알고리즘 설계", "프로그래밍 구현"] },
-        { q: "BMI 판단 조건의 논리적 순서를 배치하세요 (낮은 수치부터).", items: ["저체중(18.5 미만)", "정상(23 미만)", "과체중(25 미만)", "비만(25 이상)"] },
-        { q: "중첩 제어 구조의 활용 예시를 배치하세요.", items: ["선택 구조 내 선택", "반복 구조 내 반복", "반복 구조 내 선택", "선택 구조 내 반복"] }
-    ]
-};
+const quizData = [
+    { type: "객관식", q: "제어 구조 안에 또 다른 제어 구조가 포함된 구조의 이름은 무엇입니까?", options: ["순차 구조", "중첩 제어 구조", "단순 선택 구조", "무한 반복 구조"], correct: 1 },
+    { type: "단답형", q: "BMI 공식은 '몸무게(kg) / (키(m) * 키(m))'입니다. 여기서 키의 단위는 무엇입니까?", a: "미터" },
+    { type: "객관식", q: "반복 구조 내에서 조건에 따라 특정 작업만 수행하고 싶을 때 사용하는 구조는?", options: ["반복 내 선택", "선택 내 반복", "순차 내 반복", "함수 호출"], correct: 0 },
+    { type: "단답형", q: "알고리즘의 흐름을 시각적으로 나타내기 위해 기호와 화살표를 사용하는 그림은?", a: "순서도" },
+    { type: "객관식", q: "BMI 지수가 25 이상일 때 출력해야 할 올바른 판정 결과는?", options: ["정상", "저체중", "비만", "과체중"], correct: 2 },
+    { type: "단답형", q: "엔트리에서 사용자가 입력한 값을 저장하는 블록의 기본 이름은?", a: "대답" },
+    { type: "객관식", q: "조건 검사를 할 때 오류를 방지하기 위해 가장 권장되는 순서는?", options: ["큰 범위부터", "작은 범위부터", "알파벳 순으로", "무작위로"], correct: 1 },
+    { type: "드래그", q: "BMI 판정 프로그램의 논리 순서를 완성하세요.", items: ["키와 몸무게 입력", "BMI 지수 계산", "조건식으로 비만 판정", "결과 화면 출력"] },
+    { type: "드래그", q: "소프트웨어 개발의 일반적인 순서를 완성하세요.", items: ["문제 분석", "알고리즘 설계", "프로그래밍", "디버깅"] },
+    { type: "드래그", q: "제어 구조 중 중첩의 예시를 완성하세요.", items: ["선택 구조 내 선택", "반복 구조 내 반복", "반복 구조 내 선택", "선택 구조 내 반복"] }
+];
 
-let currentSlide = 0;
-let selectedQuestions = [];
+let currentIndex = -1; // -1 means intro screen
 
-// 2. CORE LOGIC: Shuffle & Initialize
-function initQuiz() {
-    // Pick 3 Multiple, 3 Short, 4 Drag
-    const m = shuffle([...quizSource.multiple]).slice(0, 3).map(q => ({...q, type: '객관식'}));
-    const s = shuffle([...quizSource.short]).slice(0, 3).map(q => ({...q, type: '단답형'}));
-    const d = shuffle([...quizSource.drag]).slice(0, 4).map(q => ({...q, type: '드래그앤드롭'}));
-    
-    selectedQuestions = shuffle([...m, ...s, ...d]);
-    renderDeck();
-    updateNav();
+function startQuiz() {
+    document.getElementById('intro-screen').style.display = 'none';
+    document.getElementById('progress-wrapper').style.display = 'block';
+    document.getElementById('nav-controls').style.display = 'flex';
+    currentIndex = 0;
+    renderQuiz();
 }
 
-function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+function renderQuiz() {
+    const container = document.getElementById('quiz-container');
+    // Keep intro screen in DOM but hidden
+    const cards = container.querySelectorAll('.quiz-card:not(#intro-screen)');
+    cards.forEach(c => c.remove());
 
-// 3. RENDERING ENGINE
-function renderDeck() {
-    const deck = document.getElementById('deck');
-    let html = '';
+    quizData.forEach((data, index) => {
+        const card = document.createElement('div');
+        card.className = `quiz-card ${index === currentIndex ? 'active' : ''}`;
+        card.id = `q-${index}`;
 
-    // Title Slide
-    html += `
-    <div class="slide-container">
-        <div class="hero-content">
-            <div class="hero-image">
-                <img src="http://googleusercontent.com/image_collection/image_retrieval/13245465551984251239" alt="Computer Science">
-            </div>
-            <h1>중첩 제어 구조 챌린지</h1>
-            <p>실생활 문제 해결을 위한 알고리즘 탐구</p>
-            <div style="margin-top:30px; font-weight:700; color:var(--accent);">슬라이드를 넘겨 10개의 무작위 문항을 풀어보세요.</div>
-        </div>
-        ${getFooter(0)}
-    </div>`;
+        let content = `<div class="q-type">${data.type}</div><div class="q-text">${data.q}</div>`;
 
-    // Question Slides
-    selectedQuestions.forEach((q, i) => {
-        html += `
-        <div class="slide-container">
-            <div class="slide-title">
-                QUESTION ${i + 1}
-                <span class="q-badge">${q.type}</span>
-            </div>
-            <div style="flex-grow:1;">
-                <p class="q-text">${q.q}</p>
-                ${renderContentByType(q, i)}
-            </div>
-            ${getFooter(i + 1)}
-        </div>`;
+        if (data.type === "객관식") {
+            content += `<div class="options">`;
+            data.options.forEach((opt, oIdx) => {
+                content += `<div class="option" onclick="selectOption(${index}, ${oIdx}, this)">${oIdx + 1}. ${opt}</div>`;
+            });
+            content += `</div>`;
+        } else if (data.type === "단답형") {
+            content += `<input type="text" class="short-input" placeholder="정답을 여기에 입력하세요...">`;
+        } else if (data.type === "드래그") {
+            content += `
+                <div class="drag-pool" id="pool-${index}">
+                    ${shuffleArray([...data.items]).map(item => `<div class="item" draggable="true" ondragstart="drag(event)">${item}</div>`).join('')}
+                </div>
+                <div class="drop-zone" id="zone-${index}" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div style="color:#94a3b8; text-align:center; margin:auto;">여기로 항목을 끌어다 놓으세요</div>
+                </div>
+            `;
+        }
+
+        content += `<div class="footer">copyright 함현중학교 남수현</div>`;
+        card.innerHTML = content;
+        container.appendChild(card);
     });
-
-    // Final Slide
-    html += `
-    <div class="slide-container">
-        <div class="hero-content">
-            <div class="hero-image">
-                <img src="http://googleusercontent.com/image_collection/image_retrieval/15834859264066828992" alt="Success">
-            </div>
-            <h1>학습 완료!</h1>
-            <p>함현중학교 정보 수업 마스터를 향한 한 걸음</p>
-            <button onclick="location.reload()" style="padding:18px 45px; border:none; background:var(--primary); color:white; border-radius:35px; font-size:20px; cursor:pointer; margin-top:30px; font-weight:700;">처음부터 다시하기</button>
-        </div>
-        ${getFooter(11)}
-    </div>`;
-
-    deck.innerHTML = html;
-    setupDragAndDrop();
+    updateUI();
 }
 
-function renderContentByType(q, i) {
-    if (q.type === '객관식') {
-        return `<div class="option-list">
-            ${q.options.map((opt, idx) => `<div class="option-item" onclick="selectOption(this)">${idx+1}. ${opt}</div>`).join('')}
-        </div>`;
-    } else if (q.type === '단답형') {
-        return `<input type="text" class="short-input" placeholder="이곳에 정답을 입력하세요 (예: 미터, 추상화 등)">`;
-    } else if (q.type === '드래그앤드롭') {
-        const shuffledItems = shuffle([...q.items]);
-        return `
-        <div class="drag-area" id="source-${i}">
-            ${shuffledItems.map(item => `<div class="draggable" draggable="true">${item}</div>`).join('')}
-        </div>
-        <div class="drop-zone" id="target-${i}">
-            <p style="text-align:center; color:#94a3b8; font-size:16px; margin-top:100px;">이곳으로 항목을 드래그하여 순서대로 놓으세요</p>
-        </div>`;
-    }
-}
-
-function getFooter(slideIdx) {
-    return `
-    <div class="slide-footer">
-        <div class="copyright">copyright 함현중학교 남수현</div>
-        <div style="font-family:'Poppins';">SLIDE ${slideIdx + 1} / 12</div>
-    </div>`;
-}
-
-// 4. NAVIGATION & INTERACTION
-function moveSlide(dir) {
-    currentSlide = Math.max(0, Math.min(11, currentSlide + dir));
-    document.getElementById('deck').style.transform = `translateX(-${currentSlide * 1280}px)`;
-    updateNav();
-}
-
-function updateNav() {
-    document.getElementById('progress').style.width = `${(currentSlide / 11) * 100}%`;
-    document.getElementById('prevBtn').disabled = (currentSlide === 0);
-    document.getElementById('nextBtn').disabled = (currentSlide === 11);
-}
-
-function selectOption(el) {
+function selectOption(qIdx, oIdx, el) {
     const parent = el.parentElement;
-    parent.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+    parent.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
     el.classList.add('selected');
 }
 
-// 5. DRAG & DROP LOGIC
-function setupDragAndDrop() {
-    const draggables = document.querySelectorAll('.draggable');
-    const containers = document.querySelectorAll('.drag-area, .drop-zone');
+function changeQuestion(step) {
+    if (currentIndex === -1) return;
 
-    draggables.forEach(draggable => {
-        draggable.addEventListener('dragstart', () => draggable.classList.add('dragging'));
-        draggable.addEventListener('dragend', () => draggable.classList.remove('dragging'));
-        
-        // Mobile Touch Support
-        draggable.addEventListener('touchstart', (e) => draggable.classList.add('dragging'), {passive: true});
-        draggable.addEventListener('touchend', (e) => {
-            draggable.classList.remove('dragging');
-            const touch = e.changedTouches[0];
-            const zone = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.drop-zone, .drag-area');
-            if (zone) zone.appendChild(draggable);
-        });
-    });
+    const cards = document.querySelectorAll('.quiz-card:not(#intro-screen)');
+    cards[currentIndex].classList.remove('active');
+    
+    currentIndex += step;
+    
+    if (currentIndex >= quizData.length) {
+        showFinalResult();
+        return;
+    }
 
-    containers.forEach(container => {
-        container.addEventListener('dragover', e => {
-            e.preventDefault();
-            const draggable = document.querySelector('.dragging');
-            if (draggable) container.appendChild(draggable);
-        });
-    });
+    cards[currentIndex].classList.add('active');
+    updateUI();
 }
 
-// 6. TOUCH SWIPE SUPPORT
-let touchStartX = 0;
-document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
-document.addEventListener('touchend', e => {
-    const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX - touchEndX;
-    if (Math.abs(diff) > 100) {
-        moveSlide(diff > 0 ? 1 : -1);
+function updateUI() {
+    if (currentIndex === -1) return;
+    document.getElementById('prev-btn').disabled = currentIndex === 0;
+    document.getElementById('q-counter').innerText = `${currentIndex + 1} / ${quizData.length}`;
+    document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / quizData.length) * 100}%`;
+    
+    const nextBtn = document.getElementById('next-btn');
+    if (currentIndex === quizData.length - 1) {
+        nextBtn.innerHTML = `완료 <i class="fas fa-check"></i>`;
+    } else {
+        nextBtn.innerHTML = `다음 <i class="fas fa-arrow-right"></i>`;
     }
-});
+}
 
-// START
-initQuiz();
+function showFinalResult() {
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = `
+        <div class="quiz-card active" style="text-align:center;">
+            <i class="fas fa-trophy" style="font-size: 5rem; color: #fbbf24; margin-bottom: 1rem;"></i>
+            <h2>학습을 완료했습니다!</h2>
+            <p>중첩 제어 구조의 개념을 마스터하셨습니다.</p>
+            <button class="start-btn" style="margin-top:20px;" onclick="location.reload()">처음으로 돌아가기</button>
+            <div class="footer">copyright 함현중학교 남수현</div>
+        </div>
+    `;
+    document.getElementById('nav-controls').style.display = 'none';
+    document.getElementById('progress-bar').style.width = '100%';
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function allowDrop(ev) { ev.preventDefault(); }
+function drag(ev) { ev.dataTransfer.setData("text", ev.target.innerText); ev.target.id = "dragging-now"; }
+function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    const draggingEl = document.getElementById("dragging-now");
+    const dropZone = ev.target.closest('.drop-zone');
+    
+    if (dropZone && draggingEl) {
+        const placeholder = dropZone.querySelector('div');
+        if (placeholder) placeholder.style.display = 'none';
+        dropZone.appendChild(draggingEl);
+        draggingEl.removeAttribute('id');
+    }
+}
 </script>
 
 </body>
