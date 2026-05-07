@@ -3,246 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>정보 - 중첩 제어 구조 퀴즈</title>
+    <title>중첩 제어 구조 인터랙티브 퀴즈</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --primary: #0369a1;
-            --secondary: #0ea5e9;
-            --bg: #f8fafc;
-            --text: #1e293b;
+            --primary: #003366;
+            --accent: #00CCFF;
+            --bg-dark: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
             --white: #ffffff;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif; background-color: #0f172a; color: var(--text); overflow: hidden; }
 
-        /* Slide System */
-        #viewport { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        #deck-container { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; height: 100%; }
-        
-        .slide {
-            min-width: 100vw; height: 100vh; background: var(--bg); display: flex; flex-direction: column; 
-            padding: 40px 60px; position: relative; overflow-y: auto;
+        body {
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        .content-card {
-            max-width: 900px; margin: auto; width: 100%; background: var(--white); 
-            padding: 40px; border-radius: 24px; shadow: 0 10px 25px rgba(0,0,0,0.1);
-            min-height: 500px; display: flex; flex-direction: column;
+        /* Slide Framework (1280x720) */
+        .slide-deck {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--white);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
         }
 
-        h2.title { font-size: 32px; color: var(--primary); margin-bottom: 30px; border-left: 8px solid var(--secondary); padding-left: 20px; }
-        .q-text { font-size: 22px; font-weight: 500; margin-bottom: 25px; line-height: 1.5; }
-
-        /* Type 1: Multiple Choice */
-        .option { 
-            padding: 15px 20px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px;
-            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px;
+        .slide-container {
+            min-width: 1280px;
+            height: 720px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px;
         }
-        .option:hover { background: #f0f9ff; border-color: var(--secondary); }
-        .option.selected { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Type 2: Short Answer */
-        .input-box { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 18px; margin-top: 20px; outline: none; }
-        .input-box:focus { border-color: var(--secondary); }
-
-        /* Type 3: Drag and Drop */
-        .drag-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px; min-height: 80px; }
-        .drop-zone { border: 2px dashed #cbd5e1; border-radius: 12px; min-height: 60px; margin-top: 20px; display: flex; align-items: center; padding: 10px; gap: 10px; flex-wrap: wrap; background: #fff; }
-        .draggable { padding: 10px 20px; background: var(--secondary); color: white; border-radius: 8px; cursor: grab; font-weight: 500; }
-        .draggable.dragging { opacity: 0.5; }
-
-        /* Navigation */
-        .nav-bar { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; justify-content: space-between; padding: 0 50px; pointer-events: none; }
-        .btn { 
-            pointer-events: auto; padding: 15px 30px; border-radius: 30px; border: none; 
-            background: var(--primary); color: white; font-size: 18px; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;
+        /* Typography & Header */
+        .slide-title {
+            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+            border-left: 10px solid var(--accent);
+            padding-left: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 8px; background: #e2e8f0; }
-        .progress-fill { height: 100%; background: var(--secondary); width: 0%; transition: 0.3s; }
 
-        /* Intro & Outro */
-        .hero { text-align: center; }
-        .hero h1 { font-size: 50px; color: var(--primary); margin-bottom: 20px; }
-        .hero p { font-size: 20px; color: #64748b; }
+        .q-badge {
+            font-size: 18px;
+            background: var(--accent);
+            color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
 
-        /* Image Placeholder */
-        .img-placeholder { width: 100%; height: 150px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #94a3b8; font-style: italic; }
+        .q-text { font-size: 24px; font-weight: 500; line-height: 1.6; color: var(--text-main); margin-bottom: 30px; }
+
+        /* Interactive Components */
+        .option-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .option-item {
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+        }
+        .option-item:hover { border-color: var(--accent); background: #f0f9ff; }
+        .option-item.selected { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .short-input {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 24px;
+            margin-top: 20px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .short-input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 204, 255, 0.2); }
+
+        .drag-area { display: flex; gap: 15px; margin-top: 30px; min-height: 80px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1; flex-wrap: wrap; }
+        .drop-zone { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 250px; margin-top: 20px; padding: 20px; background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; }
+        .draggable { padding: 12px 20px; background: var(--accent); color: var(--primary); font-weight: 700; border-radius: 8px; cursor: grab; text-align: center; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .draggable.dragging { opacity: 0.4; }
+
+        /* Navigation & Footer */
+        .nav-controls {
+            position: fixed;
+            bottom: 80px;
+            right: 80px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+        .nav-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .nav-btn:hover { transform: scale(1.1); background: var(--accent); }
+        .nav-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; height: 8px; background: var(--accent); transition: width 0.3s; z-index: 200; }
+
+        .slide-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 80px;
+            right: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            color: var(--text-muted);
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+        }
+
+        .copyright { font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
+
+        /* Layout: Intro & Finish */
+        .hero-content { text-align: center; justify-content: center; height: 100%; display: flex; flex-direction: column; align-items: center; }
+        .hero-content h1 { font-size: 70px; color: var(--primary); margin: 0; }
+        .hero-content p { font-size: 24px; color: var(--text-muted); margin-top: 20px; }
+        .hero-image { width: 400px; height: 250px; background: #f1f5f9; border-radius: 20px; margin-bottom: 40px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .hero-image img { width: 100%; height: 100%; object-fit: cover; }
+
     </style>
 </head>
 <body>
 
-<div class="progress-container"><div class="progress-fill" id="progress"></div></div>
+<div class="progress-bar" id="progress"></div>
 
-<div id="viewport">
-    <div id="deck-container"></div>
+<div class="slide-deck" id="deck">
+    <!-- Slides will be injected by JavaScript -->
 </div>
 
-<div class="nav-bar">
-    <button class="btn" id="prevBtn" onclick="moveSlide(-1)"><i class="fa-solid fa-chevron-left"></i> 이전</button>
-    <button class="btn" id="nextBtn" onclick="moveSlide(1)">다음 <i class="fa-solid fa-chevron-right"></i></button>
+<div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="moveSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="nav-btn" id="nextBtn" onclick="moveSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
 </div>
 
 <script>
-    // 1. Data Definitions
-    const quizData = {
-        multiple: [
-            { q: "제어 구조 안에 또 다른 제어 구조가 포함된 구조의 명칭은?", a: ["순차 구조", "반복 구조", "선택 구조", "중첩 제어 구조", "함수 구조"], c: 3 },
-            { q: "BMI 지수 23 이상 25 미만의 상태를 무엇이라 합니까?", a: ["저체중", "정상", "과체중", "비만", "고도비만"], c: 2 },
-            { q: "알고리즘을 도형과 화살표로 시각화하여 표현하는 도구는?", a: ["그림판", "엑셀", "순서도(Flowchart)", "워드", "포토샵"], c: 2 },
-            { q: "엔트리에서 사용자의 입력값을 저장하는 특수 블록은?", a: ["질문", "대답", "값", "변수", "신호"], c: 1 },
-            { q: "조건문에서 '이상'을 나타내는 기호는?", a: ["=", ">", "<", ">=", "<="], c: 3 }
-        ],
-        short: [
-            { q: "BMI 계산 공식은 '몸무게 / (키 * 키)'입니다. 이때 키의 단위는 무엇입니까?", a: "미터" },
-            { q: "제어 구조 중 조건에 따라 실행 여부를 결정하는 구조는 무엇입니까?", a: "선택 구조" },
-            { q: "프로그램 작성 전, 문제의 핵심 요소를 추출하고 단순화하는 과정을 무엇이라 합니까?", a: "추상화" },
-            { q: "반복문 내부에 또 다른 반복문이 들어있는 구조를 무엇이라 합니까?", a: "중첩 반복 구조" }
-        ],
-        drag: [
-            { q: "건강 안내 프로그램의 논리 순서를 완성하세요.", items: ["입력받기", "BMI 계산", "조건 판단", "결과 출력"], correct: ["입력받기", "BMI 계산", "조건 판단", "결과 출력"] },
-            { q: "중첩 제어 구조의 종류를 완성하세요.", items: ["선택 내 선택", "반복 내 반복", "반복 내 선택", "선택 내 반복"], correct: ["선택 내 선택", "반복 내 반복", "반복 내 선택", "선택 내 반복"] },
-            { q: "BMI 판단 조건의 범위를 완성하세요 (작은 순서대로).", items: ["18.5 미만", "23 미만", "25 미만", "25 이상"], correct: ["18.5 미만", "23 미만", "25 미만", "25 이상"] },
-            { q: "알고리즘 설계의 3단계를 완성하세요.", items: ["입력(Input)", "처리(Process)", "출력(Output)"], correct: ["입력(Input)", "처리(Process)", "출력(Output)"] }
-        ]
-    };
+// 1. DATA POOL (Based on coding_logic_quiz_20)
+const quizSource = {
+    multiple: [
+        { q: "제어 구조 안에 또 다른 제어 구조가 포함된 구조를 무엇이라고 합니까?", options: ["순차 제어 구조", "중첩 제어 구조", "단순 선택 구조", "무한 반복 구조", "함수 호출 구조"], correct: 1 },
+        { q: "중첩 제어 구조를 사용하는 가장 주된 이유는 무엇입니까?", options: ["프로그램의 실행 속도를 높이기 위해", "코딩 줄 수를 최대한 늘리기 위해", "복잡한 조건이나 다양한 상황을 유연하게 제어하기 위해", "변수의 개수를 줄이기 위해", "그래픽 화면을 더 화려하게 만들기 위해"], correct: 2 },
+        { q: "다음 중 '반복 구조 내의 선택 구조'가 활용된 사례로 가장 적절한 것은?", options: ["아침에 일어나서 학교에 가는 과정", "1부터 100까지 숫자 중 짝수만 골라 더하기", "로그인 창에서 아이디와 암호를 입력받기", "구구단 전체 단을 한 번에 출력하기", "신호등이 바뀌기를 기다리기"], correct: 1 },
+        { q: "BMI 지수가 23 이상 25 미만일 때 출력되는 건강 상태로 옳은 것은?", options: ["저체중", "정상", "과체중", "비만", "고도비만"], correct: 2 },
+        { q: "건강 정보 안내 알고리즘에서 비만(25 이상) 여부를 판단하기 위해 가장 적절한 블록 구성은?", options: ["만일 BMI < 25 이라면", "만일 BMI > 25 이라면", "만일 BMI >= 25 이라면", "만일 BMI = 25 이라면", "만일 BMI <= 25 이라면"], correct: 2 }
+    ],
+    short: [
+        { q: "BMI 계산 공식은 '몸무게 / (키 * 키)'입니다. 여기서 키의 단위는 무엇인가요?", a: "미터" },
+        { q: "문제의 핵심 요소를 추출하고 단순화하는 과정을 무엇이라 하나요?", a: "추상화" },
+        { q: "엔트리 코딩에서 사용자의 답변을 임시로 저장하여 활용하는 블록의 명칭은?", a: "대답" },
+        { q: "프로그램을 만들기 전, 문제 해결 과정을 논리적으로 설계하는 단계를 무엇이라 합니까?", a: "알고리즘 설계" },
+        { q: "BMI 계산 시 키를 1.75와 같이 소수점으로 표현하는 기준 단위는?", a: "미터" }
+    ],
+    drag: [
+        { q: "건강 정보 안내 알고리즘의 실행 순서를 올바르게 배치하세요.", items: ["몸무게/키 입력받기", "BMI 계산하기", "비만 여부 판단하기", "결과 출력하기"] },
+        { q: "알고리즘 구성의 핵심 3단계를 순서대로 배치하세요.", items: ["입력(Input)", "처리(Process)", "출력(Output)"] },
+        { q: "문제 해결의 논리적 단계를 순서대로 배치하세요.", items: ["문제 이해", "핵심 요소 추상화", "알고리즘 설계", "프로그래밍 구현"] },
+        { q: "BMI 판단 조건의 논리적 순서를 배치하세요 (낮은 수치부터).", items: ["저체중(18.5 미만)", "정상(23 미만)", "과체중(25 미만)", "비만(25 이상)"] },
+        { q: "중첩 제어 구조의 활용 예시를 배치하세요.", items: ["선택 구조 내 선택", "반복 구조 내 반복", "반복 구조 내 선택", "선택 구조 내 반복"] }
+    ]
+};
 
-    let selectedQuestions = [];
-    let currentIdx = 0;
+let currentSlide = 0;
+let selectedQuestions = [];
 
-    // 2. Initialization & Random Selection
-    function initQuiz() {
-        const m = shuffle([...quizData.multiple]).slice(0, 3).map(x => ({...x, type: 'multiple'}));
-        const s = shuffle([...quizData.short]).slice(0, 3).map(x => ({...x, type: 'short'}));
-        const d = shuffle([...quizData.drag]).slice(0, 4).map(x => ({...x, type: 'drag'}));
-        
-        selectedQuestions = shuffle([...m, ...s, ...d]);
-        renderDeck();
-        updateNav();
-    }
+// 2. CORE LOGIC: Shuffle & Initialize
+function initQuiz() {
+    // Pick 3 Multiple, 3 Short, 4 Drag
+    const m = shuffle([...quizSource.multiple]).slice(0, 3).map(q => ({...q, type: '객관식'}));
+    const s = shuffle([...quizSource.short]).slice(0, 3).map(q => ({...q, type: '단답형'}));
+    const d = shuffle([...quizSource.drag]).slice(0, 4).map(q => ({...q, type: '드래그앤드롭'}));
+    
+    selectedQuestions = shuffle([...m, ...s, ...d]);
+    renderDeck();
+    updateNav();
+}
 
-    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
 
-    // 3. Rendering
-    function renderDeck() {
-        const container = document.getElementById('deck-container');
-        let html = `
-            <div class="slide hero">
-                <div class="content-card">
-                    <h1>정보 교과 퀴즈</h1>
-                    <p>중첩 제어 구조와 실생활 프로그램 제작</p>
-                    <div class="img-placeholder"></div>
-                    <p style="margin-top:20px;">총 10문제가 랜덤하게 출제됩니다.<br>(객관식 3, 단답형 3, 드래그 앤 드롭 4)</p>
-                    <button class="btn" style="margin: 30px auto;" onclick="moveSlide(1)">시작하기</button>
-                </div>
+// 3. RENDERING ENGINE
+function renderDeck() {
+    const deck = document.getElementById('deck');
+    let html = '';
+
+    // Title Slide
+    html += `
+    <div class="slide-container">
+        <div class="hero-content">
+            <div class="hero-image">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/13245465551984251239" alt="Computer Science">
             </div>
-        `;
+            <h1>중첩 제어 구조 챌린지</h1>
+            <p>실생활 문제 해결을 위한 알고리즘 탐구</p>
+            <div style="margin-top:30px; font-weight:700; color:var(--accent);">슬라이드를 넘겨 10개의 무작위 문항을 풀어보세요.</div>
+        </div>
+        ${getFooter(0)}
+    </div>`;
 
-        selectedQuestions.forEach((q, i) => {
-            html += `<div class="slide">${renderQuestion(q, i)}</div>`;
-        });
-
+    // Question Slides
+    selectedQuestions.forEach((q, i) => {
         html += `
-            <div class="slide hero">
-                <div class="content-card">
-                    <h1>학습 완료!</h1>
-                    <p>중첩 제어 구조의 원리를 모두 확인하셨습니다.</p>
-                    <div class="img-placeholder"></div>
-                    <button class="btn" style="margin: 30px auto;" onclick="location.reload()">다시 도전하기</button>
-                </div>
+        <div class="slide-container">
+            <div class="slide-title">
+                QUESTION ${i + 1}
+                <span class="q-badge">${q.type}</span>
             </div>
-        `;
-
-        container.innerHTML = html;
-        setupDragAndDrop();
-    }
-
-    function renderQuestion(q, i) {
-        let qBody = '';
-        if(q.type === 'multiple') {
-            qBody = q.a.map((opt, idx) => `<div class="option" onclick="this.parentElement.querySelectorAll('.option').forEach(o=>o.classList.remove('selected')); this.classList.add('selected')"><span>${idx+1}.</span> ${opt}</div>`).join('');
-        } else if(q.type === 'short') {
-            qBody = `<input type="text" class="input-box" placeholder="정답을 입력하세요...">`;
-        } else if(q.type === 'drag') {
-            const shuffledItems = shuffle([...q.items]);
-            qBody = `
-                <p style="font-size:14px; color:#64748b; margin-bottom:10px;">아래 박스들을 드래그하여 순서대로 배치하세요.</p>
-                <div class="drag-container" id="drag-source-${i}">
-                    ${shuffledItems.map(item => `<div class="draggable" draggable="true">${item}</div>`).join('')}
-                </div>
-                <div class="drop-zone" id="drop-zone-${i}"></div>
-            `;
-        }
-
-        return `
-            <div class="content-card">
-                <h2 class="title">문제 ${i+1}</h2>
-                <div class="q-text">${q.q}</div>
-                ${qBody}
+            <div style="flex-grow:1;">
+                <p class="q-text">${q.q}</p>
+                ${renderContentByType(q, i)}
             </div>
-        `;
-    }
-
-    // 4. Slide Navigation
-    function moveSlide(dir) {
-        const total = selectedQuestions.length + 2;
-        currentIdx = Math.max(0, Math.min(total - 1, currentIdx + dir));
-        document.getElementById('deck-container').style.transform = `translateX(-${currentIdx * 100}vw)`;
-        updateNav();
-    }
-
-    function updateNav() {
-        const total = selectedQuestions.length + 2;
-        document.getElementById('prevBtn').disabled = currentIdx === 0;
-        document.getElementById('nextBtn').disabled = currentIdx === total - 1;
-        document.getElementById('progress').style.width = `${(currentIdx / (total - 1)) * 100}%`;
-    }
-
-    // 5. Drag and Drop Logic
-    function setupDragAndDrop() {
-        const draggables = document.querySelectorAll('.draggable');
-        const containers = document.querySelectorAll('.drag-container, .drop-zone');
-
-        draggables.forEach(draggable => {
-            draggable.addEventListener('dragstart', () => draggable.classList.add('dragging'));
-            draggable.addEventListener('dragend', () => draggable.classList.remove('dragging'));
-            // Touch support
-            draggable.addEventListener('touchstart', (e) => {
-                draggable.classList.add('dragging');
-            }, {passive: true});
-            draggable.addEventListener('touchend', (e) => {
-                draggable.classList.remove('dragging');
-                const touch = e.changedTouches[0];
-                const target = document.elementFromPoint(touch.clientX, touch.clientY);
-                const zone = target ? target.closest('.drop-zone, .drag-container') : null;
-                if (zone) zone.appendChild(draggable);
-            });
-        });
-
-        containers.forEach(container => {
-            container.addEventListener('dragover', e => {
-                e.preventDefault();
-                const draggable = document.querySelector('.dragging');
-                container.appendChild(draggable);
-            });
-        });
-    }
-
-    // 6. Touch Swipe Support
-    let startX = 0;
-    document.addEventListener('touchstart', e => startX = e.touches[0].clientX);
-    document.addEventListener('touchend', e => {
-        const diff = startX - e.changedTouches[0].clientX;
-        if(Math.abs(diff) > 100) moveSlide(diff > 0 ? 1 : -1);
+            ${getFooter(i + 1)}
+        </div>`;
     });
 
-    window.onload = initQuiz;
+    // Final Slide
+    html += `
+    <div class="slide-container">
+        <div class="hero-content">
+            <div class="hero-image">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/15834859264066828992" alt="Success">
+            </div>
+            <h1>학습 완료!</h1>
+            <p>함현중학교 정보 수업 마스터를 향한 한 걸음</p>
+            <button onclick="location.reload()" style="padding:18px 45px; border:none; background:var(--primary); color:white; border-radius:35px; font-size:20px; cursor:pointer; margin-top:30px; font-weight:700;">처음부터 다시하기</button>
+        </div>
+        ${getFooter(11)}
+    </div>`;
+
+    deck.innerHTML = html;
+    setupDragAndDrop();
+}
+
+function renderContentByType(q, i) {
+    if (q.type === '객관식') {
+        return `<div class="option-list">
+            ${q.options.map((opt, idx) => `<div class="option-item" onclick="selectOption(this)">${idx+1}. ${opt}</div>`).join('')}
+        </div>`;
+    } else if (q.type === '단답형') {
+        return `<input type="text" class="short-input" placeholder="이곳에 정답을 입력하세요 (예: 미터, 추상화 등)">`;
+    } else if (q.type === '드래그앤드롭') {
+        const shuffledItems = shuffle([...q.items]);
+        return `
+        <div class="drag-area" id="source-${i}">
+            ${shuffledItems.map(item => `<div class="draggable" draggable="true">${item}</div>`).join('')}
+        </div>
+        <div class="drop-zone" id="target-${i}">
+            <p style="text-align:center; color:#94a3b8; font-size:16px; margin-top:100px;">이곳으로 항목을 드래그하여 순서대로 놓으세요</p>
+        </div>`;
+    }
+}
+
+function getFooter(slideIdx) {
+    return `
+    <div class="slide-footer">
+        <div class="copyright">copyright 함현중학교 남수현</div>
+        <div style="font-family:'Poppins';">SLIDE ${slideIdx + 1} / 12</div>
+    </div>`;
+}
+
+// 4. NAVIGATION & INTERACTION
+function moveSlide(dir) {
+    currentSlide = Math.max(0, Math.min(11, currentSlide + dir));
+    document.getElementById('deck').style.transform = `translateX(-${currentSlide * 1280}px)`;
+    updateNav();
+}
+
+function updateNav() {
+    document.getElementById('progress').style.width = `${(currentSlide / 11) * 100}%`;
+    document.getElementById('prevBtn').disabled = (currentSlide === 0);
+    document.getElementById('nextBtn').disabled = (currentSlide === 11);
+}
+
+function selectOption(el) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+// 5. DRAG & DROP LOGIC
+function setupDragAndDrop() {
+    const draggables = document.querySelectorAll('.draggable');
+    const containers = document.querySelectorAll('.drag-area, .drop-zone');
+
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => draggable.classList.add('dragging'));
+        draggable.addEventListener('dragend', () => draggable.classList.remove('dragging'));
+        
+        // Mobile Touch Support
+        draggable.addEventListener('touchstart', (e) => draggable.classList.add('dragging'), {passive: true});
+        draggable.addEventListener('touchend', (e) => {
+            draggable.classList.remove('dragging');
+            const touch = e.changedTouches[0];
+            const zone = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.drop-zone, .drag-area');
+            if (zone) zone.appendChild(draggable);
+        });
+    });
+
+    containers.forEach(container => {
+        container.addEventListener('dragover', e => {
+            e.preventDefault();
+            const draggable = document.querySelector('.dragging');
+            if (draggable) container.appendChild(draggable);
+        });
+    });
+}
+
+// 6. TOUCH SWIPE SUPPORT
+let touchStartX = 0;
+document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+document.addEventListener('touchend', e => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 100) {
+        moveSlide(diff > 0 ? 1 : -1);
+    }
+});
+
+// START
+initQuiz();
 </script>
 
 </body>
